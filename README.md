@@ -1,0 +1,2 @@
+# VegasScriptAddMediaBinInTrack
+指定したトラックのメディアを全てメディアビンに入れる
