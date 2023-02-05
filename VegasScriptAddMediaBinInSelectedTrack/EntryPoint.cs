@@ -5,8 +5,10 @@ using VegasScriptHelper;
 
 namespace VegasScriptAddMediaBinInSelectedTrack
 {
-    public class EntryPoint
+    public class EntryPoint: IEntryPoint
     {
+        private static BinSettingForm binSettingForm = null;
+
         public void FromVegas(Vegas vegas)
         {
             VegasScriptSettings.Load();
@@ -34,15 +36,14 @@ namespace VegasScriptAddMediaBinInSelectedTrack
             string binName = VegasScriptSettings.DefaultBinName["voiroJimaku"];
             List<string> binNameList = helper.GetMediaBinNameList();
 
-            BinSettingForm form = new BinSettingForm()
-            {
-                BinName = binName,
-                ExistBinNames = binNameList
-            };
+            if(binSettingForm == null) { binSettingForm = new BinSettingForm(); }
 
-            if(form.ShowDialog() == DialogResult.Cancel ){ return; }
+            binSettingForm.BinName = binName;
+            binSettingForm.ExistBinNames = binNameList;
 
-            binName = form.BinName;
+            if(binSettingForm.ShowDialog() == DialogResult.Cancel ){ return; }
+
+            binName = binSettingForm.BinName;
 
             MediaBin bin = helper.IsExistMediaBin(binName) ? helper.GetMediaBin(binName) : helper.CreateMediaBin(binName);
 
