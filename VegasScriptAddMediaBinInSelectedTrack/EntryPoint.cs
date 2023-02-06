@@ -1,5 +1,7 @@
 ﻿using ScriptPortal.Vegas;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Forms;
 using VegasScriptHelper;
 
@@ -11,7 +13,6 @@ namespace VegasScriptAddMediaBinInSelectedTrack
 
         public void FromVegas(Vegas vegas)
         {
-            VegasScriptSettings.Load();
             VegasHelper helper = VegasHelper.Instance(vegas);
 
             Track track = null;
@@ -45,14 +46,33 @@ namespace VegasScriptAddMediaBinInSelectedTrack
 
             binName = binSettingForm.BinName;
 
-            MediaBin bin = helper.IsExistMediaBin(binName) ? helper.GetMediaBin(binName) : helper.CreateMediaBin(binName);
-
-            foreach (TrackEvent trackEvent in trackEvents)
+            try
             {
-                foreach(Take take in trackEvent.Takes)
+                using (new UndoBlock("対象トラックのメディアをビンに追加"))
                 {
-                    bin.Add(take.Media);
+                    MediaBin bin = helper.IsExistMediaBin(binName) ? helper.GetMediaBin(binName) : helper.CreateMediaBin(binName);
+
+                    foreach (TrackEvent trackEvent in trackEvents)
+                    {
+                        foreach (Take take in trackEvent.Takes)
+                        {
+                            bin.Add(take.Media);
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                string errMessage = "[MESSAGE]" + ex.Message + "\n[SOURCE]" + ex.Source + "\n[STACKTRACE]" + ex.StackTrace;
+                Debug.WriteLine("---[Exception In Helper]---");
+                Debug.WriteLine(errMessage);
+                Debug.WriteLine("---------------------------");
+                MessageBox.Show(
+                    errMessage,
+                    "エラー",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                throw ex;
             }
         }
     }
